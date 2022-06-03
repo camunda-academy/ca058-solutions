@@ -16,6 +16,7 @@ var zbcClient zbc.Client
 func StartOrderHandler(client zbc.Client) {
 	zbcClient = client
 	client.NewJobWorker().JobType("payment-invocation").Handler(invokePayment).Open()
+	client.NewJobWorker().JobType("discount-reduction").Handler(reduceDiscount).Open()
 }
 
 func invokePayment(client worker.JobClient, job entities.Job) {
@@ -43,7 +44,6 @@ func invokePayment(client worker.JobClient, job entities.Job) {
 	request.Send(ctx)
 }
 
-
 func reduceDiscount(client worker.JobClient, job entities.Job) {
 	//print information about job
 	fmt.Println("Reduce Discount ...")
@@ -56,7 +56,7 @@ func reduceDiscount(client worker.JobClient, job entities.Job) {
 	orderTotal := reflect.ValueOf(vars["discount"]).Convert(reflect.TypeOf(float64(0))).Float()
 	discount := reflect.ValueOf(vars["discount"]).Convert(reflect.TypeOf(float64(0))).Float()
 
-	vars["orderTotal"] = orderTotal * (100-discount)/100
+	vars["orderTotal"] = orderTotal * (100 - discount) / 100
 
 	// complete job
 	request, _ := client.NewCompleteJobCommand().JobKey(job.GetKey()).VariablesFromMap(vars)
