@@ -52,6 +52,12 @@ async def main():
     async def start_payment(job : Job): # We can work directly on the job object
         # Publish a message with an empy correlation key (start events do not support correlation keys)
         await zeebe_client.publish_message(name="paymentRequestMessage", correlation_key="", variables=job.variables) # include all variables in the message
+        
+            
+    @worker.task(task_type="discount-application")
+    async def calculate_discount(discount, orderTotal):
+        discountedAmount = orderTotal - (orderTotal * discount / 100)
+        await zeebe_client.publish_message(name="paymentRequestMessage", correlation_key="", variables={"discountedAmount": discountedAmount})
     
     await worker.work() # start the workers
 
