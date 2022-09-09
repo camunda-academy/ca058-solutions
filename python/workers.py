@@ -1,10 +1,9 @@
 import asyncio
 from pyzeebe import ZeebeWorker, ZeebeClient, Job, create_camunda_cloud_channel
 
-async def on_error(exception: Exception, job: Job):
-    print(exception)
-    # set failure status causes the job to fail, and an incident is created
-    await job.set_failure_status(f"Failed to handle job {job}. Error: {str(exception)}")
+async def trigger_boundary_event(exception: Exception, job: Job):
+    # set error status takes an error message and an error code. The corresponding BPMN error is thrown.
+    await job.set_error_status(f"Failed to handle job {job}. Error: {str(exception)}", "creditCardChargeError")
 
 def get_customer_credit(customerId):
     return int(customerId[-2:]) # get the last two characters of the customer ID and convert them to int
@@ -34,13 +33,13 @@ async def main():
         return {"customerCredit": max(0.0, customerCredit - orderTotal), "openAmount": openAmount}
     
     # Create a worker for task type "credit-card-charging"
-    @worker.task(task_type="credit-card-charging", exception_handler=on_error)
+    @worker.task(task_type="credit-card-charging", exception_handler=trigger_boundary_event)
     def charge_card(openAmount, expiryDate) -> dict:
         if len(expiryDate)==5:
             print(f"Charging {openAmount} from credit card")
         else:
             print(f"Failed to charge credit card. Invalid expiration date {expiryDate}")
-            # We raise an exception an delegate the failure to the exception handler
+            # We raise an exception and delegate raising the BPMN error to the exception handler
             raise RuntimeError(f"Failed to charge credit card. Invalid expiration date {expiryDate}")
         return {}
         
