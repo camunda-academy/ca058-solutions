@@ -1,5 +1,5 @@
 import asyncio
-from pyzeebe import ZeebeWorker, create_camunda_cloud_channel
+from pyzeebe import ZeebeWorker, ZeebeClient, Job, create_camunda_cloud_channel
 
 def get_customer_credit(customerId):
     return int(customerId[-2:]) # get the last two characters of the customer ID and convert them to int
@@ -19,6 +19,7 @@ async def main():
     
      # Create a worker object to register your workers
     worker = ZeebeWorker(channel)
+    zeebe_client = ZeebeClient(channel)
 
     # Create a worker for task type "credit-deduction"
     @worker.task(task_type="credit-deduction")
@@ -31,6 +32,16 @@ async def main():
     @worker.task(task_type="credit-card-charging")
     def charge_card(remainingAmount) -> dict:
         print(f"Charging {remainingAmount} from credit card")
+        
+    @worker.task(task_type="payment-completion")
+    async def complete_payment(orderId):
+        # Publishes a message. We need to add an await, otherwise python will complain
+        await zeebe_client.publish_message(name="paymentCompletedMessage", correlation_key=orderId)
+        
+    @worker.task(task_type="payment-invocation")
+    async def start_payment(job : Job): # We can work directly on the job object
+        # Publish a message with an empy correlation key (start events do not support correlation keys)
+        await zeebe_client.publish_message(name="paymentRequestMessage", correlation_key="", variables=job.variables) # include all variables in the message
     
     await worker.work() # start the workers
 
