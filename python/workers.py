@@ -57,7 +57,7 @@ async def main():
     @worker.task(task_type="discount-application")
     async def calculate_discount(discount, orderTotal):
         discountedAmount = orderTotal - (orderTotal * discount / 100)
-        await zeebe_client.publish_message(name="paymentRequestMessage", correlation_key="", variables={"discountedAmount": discountedAmount})
+        return {"discountedAmount": discountedAmount}
     
     await worker.work() # start the workers
 
