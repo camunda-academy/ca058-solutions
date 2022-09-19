@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "properties-reader": "^2.2.0",
+    "zeebe-node": "^8.0.1"
+  }
+}
