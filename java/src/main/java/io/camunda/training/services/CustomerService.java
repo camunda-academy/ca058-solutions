@@ -1,7 +1,6 @@
 package io.camunda.training.services;
 
 public class CustomerService {
-
   public double getCustomerCredit(String customerId) {
     return Double.valueOf(customerId.substring(customerId.length() - 2));
   }
