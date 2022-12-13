@@ -1,14 +1,12 @@
 package io.camunda.training.workers;
 
 import io.camunda.training.services.CreditCardService;
-import io.camunda.zeebe.client.ZeebeClient;
 import io.camunda.zeebe.client.api.response.ActivatedJob;
 import io.camunda.zeebe.client.api.worker.JobClient;
 import io.camunda.zeebe.spring.client.annotation.JobWorker;
 import io.camunda.zeebe.spring.client.annotation.Variable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -24,8 +22,9 @@ public class CreditCardChargingWorker {
 
     new CreditCardService().chargeAmount(cardNumber, cvc, expiryDate, openAmount);
 
-    jobClient.newCompleteCommand(job).send().exceptionally(throwable -> {
-      throw new RuntimeException("Could not complete job " + job, throwable);
-    });
+    jobClient.newCompleteCommand(job)
+      .send().exceptionally(throwable -> {
+        throw new RuntimeException("Could not complete job " + job, throwable);
+      });
   }
 }
