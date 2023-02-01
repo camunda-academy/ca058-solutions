@@ -1,5 +1,6 @@
 package io.camunda.training.workers;
 
+import io.camunda.training.exceptions.InvalidCreditCardException;
 import io.camunda.training.services.CreditCardService;
 import io.camunda.zeebe.client.api.response.ActivatedJob;
 import io.camunda.zeebe.client.api.worker.JobClient;
@@ -14,17 +15,32 @@ public class CreditCardChargingWorker {
 
   Logger LOGGER = LoggerFactory.getLogger(CreditCardChargingWorker.class);
 
+  private final CreditCardService creditCardService;
+
+  public CreditCardChargingWorker(CreditCardService creditCardService) {
+    this.creditCardService = creditCardService;
+  }
+
   @JobWorker(type = "credit-card-charging", autoComplete = false)
   public void handleCreditCardCharging(final JobClient jobClient, final ActivatedJob job,
     @Variable String cardNumber, @Variable String cvc, @Variable String expiryDate,
     @Variable Double openAmount) {
     LOGGER.info("Task definition type: " + job.getType());
 
-    new CreditCardService().chargeAmount(cardNumber, cvc, expiryDate, openAmount);
+    try {
+      creditCardService.chargeAmount(cardNumber, cvc, expiryDate, openAmount);
 
-    jobClient.newCompleteCommand(job)
-      .send().exceptionally(throwable -> {
-        throw new RuntimeException("Could not complete job " + job, throwable);
-      });
+      jobClient.newCompleteCommand(job)
+        .send().exceptionally(throwable -> {
+          throw new RuntimeException("Could not complete job " + job, throwable);
+        });
+    } catch (InvalidCreditCardException e) {
+      jobClient.newFailCommand(job)
+        .retries(0)
+        .errorMessage(e.getMessage())
+        .send().exceptionally(throwable -> {
+          throw new RuntimeException("Could not fail job " + job, throwable);
+        });
+    }
   }
 }

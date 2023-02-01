@@ -9,7 +9,6 @@ import java.util.Map;
 import java.util.Random;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -17,8 +16,11 @@ public class MessageWorker {
 
   Logger LOGGER = LoggerFactory.getLogger(MessageWorker.class);
 
-  @Autowired
-  private ZeebeClient zeebeClient;
+  private final ZeebeClient zeebeClient;
+
+  public MessageWorker(final ZeebeClient zeebeClient) {
+    this.zeebeClient = zeebeClient;
+  }
 
   @JobWorker(type = "payment-invocation", autoComplete = false)
   public void handlePaymentInvocation(final JobClient jobClient, final ActivatedJob job) {
@@ -33,7 +35,7 @@ public class MessageWorker {
       .correlationKey(orderId)
       .variables(variables)
       .send().exceptionally(throwable -> {
-        throw new RuntimeException("Could not complete job " + job, throwable);
+        throw new RuntimeException("Could not send message during job " + job, throwable);
       });
 
     jobClient.newCompleteCommand(job)
@@ -45,12 +47,13 @@ public class MessageWorker {
 
   @JobWorker(type = "payment-completion", autoComplete = false)
   public void handlePaymentCompletion(final JobClient jobClient, final ActivatedJob job,
-    @Variable String orderId) {
+    @Variable String orderId, @Variable String expiryDate) {
     LOGGER.info("Task definition type: " + job.getType());
 
     zeebeClient.newPublishMessageCommand()
       .messageName("paymentCompletedMessage")
       .correlationKey(orderId)
+      .variables(Map.of("expiryDate", expiryDate)) // Send "expiryDate" update in case of incident
       .send().exceptionally(throwable -> {
         throw new RuntimeException("Could not complete job " + job, throwable);
       });
