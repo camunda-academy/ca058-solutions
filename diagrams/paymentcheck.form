@@ -51,7 +51,8 @@
       "label": "Total Amount",
       "type": "number",
       "id": "Field_1evmkgw",
-      "key": "orderTotal"
+      "key": "orderTotal",
+      "appearance": {}
     },
     {
       "label": "Error resolved?",
@@ -66,7 +67,7 @@
   "executionPlatformVersion": "8.0.0",
   "exporter": {
     "name": "Camunda Modeler",
-    "version": "5.0.0"
+    "version": "5.7.0"
   },
-  "schemaVersion": 4
+  "schemaVersion": 6
 }
