@@ -35,12 +35,19 @@ public class CreditCardChargingWorker {
           throw new RuntimeException("Could not complete job " + job, throwable);
         });
     } catch (InvalidCreditCardException e) {
+      jobClient.newThrowErrorCommand(job)
+        .errorCode("invalidExpiryDateError")
+        .errorMessage("Invalid expiry date: " + expiryDate)
+        .send().exceptionally(throwable -> {
+          throw new RuntimeException("Could not throw BPMN error during job " + job, throwable);
+        });;
+    } catch (Exception e) {
       jobClient.newFailCommand(job)
-        .retries(0)
-        .errorMessage(e.getMessage())
+        .retries(job.getRetries() - 1)
+        .errorMessage("An error has occured: " + e.getMessage())
         .send().exceptionally(throwable -> {
           throw new RuntimeException("Could not fail job " + job, throwable);
-        });
+        });;;
     }
   }
 }

@@ -55,7 +55,7 @@ public class MessageWorker {
       .correlationKey(orderId)
       .variables(Map.of("expiryDate", expiryDate)) // Send "expiryDate" update in case of incident
       .send().exceptionally(throwable -> {
-        throw new RuntimeException("Could not complete job " + job, throwable);
+        throw new RuntimeException("Could not send message during job " + job, throwable);
       });
 
     jobClient.newCompleteCommand(job)
