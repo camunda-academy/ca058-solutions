@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" xmlns:zeebe="http://camunda.org/schema/zeebe/1.0" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" id="Definitions_0goqw8c" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Web Modeler" exporterVersion="e8f2bb5" modeler:executionPlatform="Camunda Cloud" modeler:executionPlatformVersion="8.2.0" camunda:diagramRelationId="c6bacf5d-6e42-45d2-be0c-7eef18270ce8">
+  <bpmn:process id="PaymentProcess" name="Payment process" isExecutable="true">
+    <bpmn:extensionElements />
+    <bpmn:sequenceFlow id="Flow_00c34by" sourceRef="StartEvent_1" targetRef="Activity_12hmv3w" />
+    <bpmn:exclusiveGateway id="creditSufficientGateway" name="Credit sufficient?" default="Flow_03cijic">
+      <bpmn:incoming>Flow_1g6tjlr</bpmn:incoming>
+      <bpmn:outgoing>Flow_1vx65bh</bpmn:outgoing>
+      <bpmn:outgoing>Flow_03cijic</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:sequenceFlow id="Flow_1g6tjlr" sourceRef="Activity_12hmv3w" targetRef="creditSufficientGateway" />
+    <bpmn:endEvent id="paymentCompleted" name="Payment completed">
+      <bpmn:incoming>Flow_0f7fhbg</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_1vx65bh" name="Yes" sourceRef="creditSufficientGateway" targetRef="Gateway_1xcwh8l">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">=orderTotal &lt;= customerCredit</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:exclusiveGateway id="Gateway_1xcwh8l">
+      <bpmn:incoming>Flow_1vx65bh</bpmn:incoming>
+      <bpmn:incoming>Flow_0e64ocs</bpmn:incoming>
+      <bpmn:outgoing>Flow_0f7fhbg</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:sequenceFlow id="Flow_0f7fhbg" sourceRef="Gateway_1xcwh8l" targetRef="paymentCompleted" />
+    <bpmn:sequenceFlow id="Flow_0e64ocs" sourceRef="Activity_1c2kuor" targetRef="Gateway_1xcwh8l" />
+    <bpmn:sequenceFlow id="Flow_03cijic" name="no" sourceRef="creditSufficientGateway" targetRef="Activity_1c2kuor" />
+    <bpmn:serviceTask id="Activity_12hmv3w" name="Deduct credit">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="credit-deduction" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_00c34by</bpmn:incoming>
+      <bpmn:outgoing>Flow_1g6tjlr</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="Activity_1c2kuor" name="Charge credit card">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="credit-card-charging" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_03cijic</bpmn:incoming>
+      <bpmn:outgoing>Flow_0e64ocs</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:startEvent id="StartEvent_1" name="Payment required">
+      <bpmn:outgoing>Flow_00c34by</bpmn:outgoing>
+    </bpmn:startEvent>
+  </bpmn:process>
+  <bpmn:message id="Message_397t0vs" name="paymentRequestMessage" />
+  <bpmn:error id="Error_0rfhzkc" name="Charging failed" errorCode="creditCardChargeError" />
+  <bpmn:message id="Message_329o2sp" name="paymentRequestMessage" />
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="PaymentProcess">
+      <bpmndi:BPMNShape id="Gateway_1gtbr66_di" bpmnElement="creditSufficientGateway" isMarkerVisible="true">
+        <dc:Bounds x="425" y="105" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="409" y="81" width="82" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_13154v2_di" bpmnElement="paymentCompleted">
+        <dc:Bounds x="1132" y="112" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1125" y="155" width="51" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_1xcwh8l_di" bpmnElement="Gateway_1xcwh8l" isMarkerVisible="true">
+        <dc:Bounds x="745" y="105" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_107i8er_di" bpmnElement="Activity_12hmv3w">
+        <dc:Bounds x="270" y="90" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1o94519_di" bpmnElement="Activity_1c2kuor">
+        <dc:Bounds x="560" y="270" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_11dlczo_di" bpmnElement="StartEvent_1">
+        <dc:Bounds x="179" y="112" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="154" y="155" width="87" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_00c34by_di" bpmnElement="Flow_00c34by">
+        <di:waypoint x="215" y="130" />
+        <di:waypoint x="270" y="130" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1g6tjlr_di" bpmnElement="Flow_1g6tjlr">
+        <di:waypoint x="370" y="130" />
+        <di:waypoint x="425" y="130" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1vx65bh_di" bpmnElement="Flow_1vx65bh">
+        <di:waypoint x="475" y="130" />
+        <di:waypoint x="745" y="130" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="490" y="112" width="18" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0f7fhbg_di" bpmnElement="Flow_0f7fhbg">
+        <di:waypoint x="795" y="130" />
+        <di:waypoint x="1132" y="130" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0e64ocs_di" bpmnElement="Flow_0e64ocs">
+        <di:waypoint x="660" y="310" />
+        <di:waypoint x="770" y="310" />
+        <di:waypoint x="770" y="155" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_03cijic_di" bpmnElement="Flow_03cijic">
+        <di:waypoint x="450" y="155" />
+        <di:waypoint x="450" y="310" />
+        <di:waypoint x="560" y="310" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="459" y="238" width="13" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

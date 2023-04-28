@@ -1,0 +1,32 @@
+# Visual Studio Code files
+.vscode/
+
+# Compiled output
+bin/
+obj/
+
+# NuGet Packages
+*.nuget.props
+*.nuget.targets
+packages/
+
+# MSTest test Results
+TestResults/
+
+# Build results
+[Dd]ebug/
+[Rr]elease/
+x64/
+build/
+
+# Other files and folders
+*.exe
+*.pdb
+*.user
+*.ncrunch*
+*.suo
+*.cache
+*.log
+*.vs
+
+appsettings.json
