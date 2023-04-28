@@ -5,4 +5,5 @@ public class MyVar{
     public string expiryDate { get; set;}
     public string cvc { get; set;}
     public string cardNumber { get; set;}
+    public string orderId {get; set;}
 }

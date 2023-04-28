@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:zeebe="http://camunda.org/schema/zeebe/1.0" xmlns:modeler="http://camunda.org/schema/modeler/1.0" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" id="Definitions_1" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Web Modeler" exporterVersion="e8f2bb5" modeler:executionPlatform="Camunda Cloud" modeler:executionPlatformVersion="8.2.0" camunda:diagramRelationId="8896066e-1cf0-4210-987b-f4011df0f630">
+  <bpmn:process id="OrderProcess" name="OrderProcess" isExecutable="true">
+    <bpmn:startEvent id="StartEvent_1" name="Order received">
+      <bpmn:outgoing>Flow_0u7fsda</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:sequenceFlow id="Flow_0u7fsda" sourceRef="StartEvent_1" targetRef="Activity_0jfyxxz" />
+    <bpmn:sendTask id="Activity_0jfyxxz" name="Invoke payment">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="payment-invocation" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_0u7fsda</bpmn:incoming>
+      <bpmn:outgoing>Flow_1gnoltu</bpmn:outgoing>
+    </bpmn:sendTask>
+    <bpmn:sequenceFlow id="Flow_1gnoltu" sourceRef="Activity_0jfyxxz" targetRef="Event_1c9siqe" />
+    <bpmn:intermediateCatchEvent id="Event_1c9siqe" name="Payment completed">
+      <bpmn:incoming>Flow_1gnoltu</bpmn:incoming>
+      <bpmn:outgoing>Flow_02l7cbv</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MessageEventDefinition_1bu46n5" messageRef="Message_0eqtpvb" />
+    </bpmn:intermediateCatchEvent>
+    <bpmn:endEvent id="Event_1xnaz3f" name="Order completed">
+      <bpmn:incoming>Flow_02l7cbv</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_02l7cbv" sourceRef="Event_1c9siqe" targetRef="Event_1xnaz3f" />
+    <bpmn:textAnnotation id="TextAnnotation_1uv5ppb">
+      <bpmn:text>orderId</bpmn:text>
+    </bpmn:textAnnotation>
+    <bpmn:association id="Association_0ltgzfw" sourceRef="StartEvent_1" targetRef="TextAnnotation_1uv5ppb" />
+    <bpmn:textAnnotation id="TextAnnotation_1ubsr5k">
+      <bpmn:text>toutes les variables sont passées</bpmn:text>
+    </bpmn:textAnnotation>
+    <bpmn:association id="Association_13xl9bp" sourceRef="Activity_0jfyxxz" targetRef="TextAnnotation_1ubsr5k" />
+  </bpmn:process>
+  <bpmn:message id="Message_0eqtpvb" name="paymentCompletedMessage">
+    <bpmn:extensionElements>
+      <zeebe:subscription correlationKey="=orderId" />
+    </bpmn:extensionElements>
+  </bpmn:message>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="OrderProcess">
+      <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="StartEvent_1">
+        <dc:Bounds x="192" y="112" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="174" y="155" width="73" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1hr32z5_di" bpmnElement="Activity_0jfyxxz">
+        <dc:Bounds x="340" y="90" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_1wjgx9t_di" bpmnElement="Event_1c9siqe">
+        <dc:Bounds x="572" y="112" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="565" y="155" width="51" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_1xnaz3f_di" bpmnElement="Event_1xnaz3f">
+        <dc:Bounds x="712" y="112" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="689" y="155" width="82" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="TextAnnotation_1uv5ppb_di" bpmnElement="TextAnnotation_1uv5ppb">
+        <dc:Bounds x="240" y="300" width="100" height="30" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="TextAnnotation_1ubsr5k_di" bpmnElement="TextAnnotation_1ubsr5k">
+        <dc:Bounds x="400" y="270" width="100" height="55" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_0u7fsda_di" bpmnElement="Flow_0u7fsda">
+        <di:waypoint x="228" y="130" />
+        <di:waypoint x="340" y="130" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1gnoltu_di" bpmnElement="Flow_1gnoltu">
+        <di:waypoint x="440" y="130" />
+        <di:waypoint x="572" y="130" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_02l7cbv_di" bpmnElement="Flow_02l7cbv">
+        <di:waypoint x="608" y="130" />
+        <di:waypoint x="712" y="130" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Association_0ltgzfw_di" bpmnElement="Association_0ltgzfw">
+        <di:waypoint x="217" y="146" />
+        <di:waypoint x="284" y="300" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Association_13xl9bp_di" bpmnElement="Association_13xl9bp">
+        <di:waypoint x="405" y="170" />
+        <di:waypoint x="444" y="270" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

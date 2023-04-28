@@ -10,7 +10,7 @@
     </bpmn:exclusiveGateway>
     <bpmn:sequenceFlow id="Flow_1g6tjlr" sourceRef="Activity_12hmv3w" targetRef="creditSufficientGateway" />
     <bpmn:endEvent id="paymentCompleted" name="Payment completed">
-      <bpmn:incoming>Flow_0f7fhbg</bpmn:incoming>
+      <bpmn:incoming>Flow_096acqu</bpmn:incoming>
     </bpmn:endEvent>
     <bpmn:sequenceFlow id="Flow_1vx65bh" name="Yes" sourceRef="creditSufficientGateway" targetRef="Gateway_1xcwh8l">
       <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">=orderTotal &lt;= customerCredit</bpmn:conditionExpression>
@@ -20,7 +20,7 @@
       <bpmn:incoming>Flow_0e64ocs</bpmn:incoming>
       <bpmn:outgoing>Flow_0f7fhbg</bpmn:outgoing>
     </bpmn:exclusiveGateway>
-    <bpmn:sequenceFlow id="Flow_0f7fhbg" sourceRef="Gateway_1xcwh8l" targetRef="paymentCompleted" />
+    <bpmn:sequenceFlow id="Flow_0f7fhbg" sourceRef="Gateway_1xcwh8l" targetRef="Activity_0zx2xh5" />
     <bpmn:sequenceFlow id="Flow_0e64ocs" sourceRef="Activity_1c2kuor" targetRef="Gateway_1xcwh8l" />
     <bpmn:sequenceFlow id="Flow_03cijic" name="no" sourceRef="creditSufficientGateway" targetRef="Activity_1c2kuor" />
     <bpmn:serviceTask id="Activity_12hmv3w" name="Deduct credit">
@@ -39,7 +39,16 @@
     </bpmn:serviceTask>
     <bpmn:startEvent id="StartEvent_1" name="Payment required">
       <bpmn:outgoing>Flow_00c34by</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MessageEventDefinition_0evk7j4" messageRef="Message_329o2sp" />
     </bpmn:startEvent>
+    <bpmn:sequenceFlow id="Flow_096acqu" sourceRef="Activity_0zx2xh5" targetRef="paymentCompleted" />
+    <bpmn:sendTask id="Activity_0zx2xh5" name="Complete payment">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="payment-completion" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_0f7fhbg</bpmn:incoming>
+      <bpmn:outgoing>Flow_096acqu</bpmn:outgoing>
+    </bpmn:sendTask>
   </bpmn:process>
   <bpmn:message id="Message_397t0vs" name="paymentRequestMessage" />
   <bpmn:error id="Error_0rfhzkc" name="Charging failed" errorCode="creditCardChargeError" />
@@ -67,11 +76,15 @@
       <bpmndi:BPMNShape id="Activity_1o94519_di" bpmnElement="Activity_1c2kuor">
         <dc:Bounds x="560" y="270" width="100" height="80" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Event_11dlczo_di" bpmnElement="StartEvent_1">
+      <bpmndi:BPMNShape id="Event_148rilu_di" bpmnElement="StartEvent_1">
         <dc:Bounds x="179" y="112" width="36" height="36" />
         <bpmndi:BPMNLabel>
           <dc:Bounds x="154" y="155" width="87" height="14" />
         </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1of6aod_di" bpmnElement="Activity_0zx2xh5">
+        <dc:Bounds x="890" y="90" width="100" height="80" />
+        <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge id="Flow_00c34by_di" bpmnElement="Flow_00c34by">
         <di:waypoint x="215" y="130" />
@@ -90,7 +103,7 @@
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_0f7fhbg_di" bpmnElement="Flow_0f7fhbg">
         <di:waypoint x="795" y="130" />
-        <di:waypoint x="1132" y="130" />
+        <di:waypoint x="890" y="130" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_0e64ocs_di" bpmnElement="Flow_0e64ocs">
         <di:waypoint x="660" y="310" />
@@ -104,6 +117,10 @@
         <bpmndi:BPMNLabel>
           <dc:Bounds x="459" y="238" width="13" height="14" />
         </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_096acqu_di" bpmnElement="Flow_096acqu">
+        <di:waypoint x="990" y="130" />
+        <di:waypoint x="1132" y="130" />
       </bpmndi:BPMNEdge>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>
