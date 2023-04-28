@@ -7,24 +7,23 @@ namespace CamundaTraining.Services
 {
     public class CreditCardService
     {
-        private readonly ILogger<CreditCardService> _logger;
-
-        public CreditCardService(ILogger<CreditCardService> logger)
-        {
-            _logger = logger;
-        }
 
         public void ChargeAmount(string cardNumber, string cvc, string expiryDate, double amount)
         {
-            if (expiryDate.Length == 5)
-            {
-                _logger.LogInformation($"Credit card number: {cardNumber}, CVC: {cvc}, Expiry date: {expiryDate}, Order total: {amount}");
+            if (string.IsNullOrEmpty(cardNumber) || string.IsNullOrEmpty(cvc) || string.IsNullOrEmpty(expiryDate) || amount <= 0){
+                Console.WriteLine("Invalid input: cardNumber, cvc, expiryDate and amount are mandatory");
             }
-            else
-            {
-                _logger.LogError($"The credit card's expiry date is invalid: {expiryDate}");
+            else{
+                if (expiryDate.Length == 5)
+                {
+                    Console.WriteLine("Credit card number: " + cardNumber +", CVC: "+cvc+", Expiry date: " + expiryDate + ", Order total: " + amount);
+                }
+                else
+                {
+                    Console.WriteLine($"The credit card's expiry date is invalid: {expiryDate}");
 
-                throw new InvalidCreditCardException("Invalid credit card expiry date");
+                    throw new InvalidCreditCardException("Invalid credit card expiry date");
+                }
             }
         }
     }

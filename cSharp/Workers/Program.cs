@@ -10,6 +10,7 @@ using NLog.Extensions.Logging;
 using CamundaTraining.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Configuration.Json;
+using System.Text.Json;
 
  
 namespace CamundaTraining.Workers
@@ -72,10 +73,28 @@ namespace CamundaTraining.Workers
         {
             // business logic
             var jobKey = job.Key;
-            Console.WriteLine("Handling job: " + job);
+            // Deserialize the JSON-formatted string into a C# object
+            var variablesObj = JsonSerializer.Deserialize<MyVar>(job.Variables);
+
+            var customerId = variablesObj.customerId;
+            var orderTotal = variablesObj.orderTotal;
+
+            // Create an instance of CustomerService
+            var customerService = new CustomerService();
+
+            // Call the GetCustomerCredit method and store the result in a variable
+            var customerCredit = customerService.GetCustomerCredit(customerId);
+
+            var openAmount = customerService.DeductCredit(customerCredit, orderTotal);
+
+            Dictionary<string, object> variablesOut = new Dictionary<string, object>();
+            variablesOut["customerCredit"] = customerCredit;
+            variablesOut["openAmount"] = openAmount;
+
+            Console.WriteLine("Handling job: " + job + " customerId: " + customerId);
 
             jobClient.NewCompleteJobCommand(jobKey)
-                    .Variables("{\"foo\":2}")
+                    .Variables(JsonSerializer.Serialize(variablesOut))
                     .Send()
                     .GetAwaiter()
                     .GetResult();
@@ -86,6 +105,20 @@ namespace CamundaTraining.Workers
             // business logic
             var jobKey = job.Key;
             
+            var variables = JsonSerializer.Deserialize<MyVar>(job.Variables);
+            Console.WriteLine("Variables deserialized"); 
+
+            string cardNumber = variables.cardNumber;
+            Console.WriteLine("cardNumber " + cardNumber); 
+            string cvc = variables.cvc;
+            Console.WriteLine("cvc " + cvc); 
+            string expiryDate = variables.expiryDate;
+            Console.WriteLine("expiryDate " + expiryDate); 
+            double amount = variables.openAmount;
+            Console.WriteLine("openAmount " + amount); 
+
+            new CreditCardService().ChargeAmount(cardNumber, cvc, expiryDate, amount);
+
             Console.WriteLine("Managing job: " + job); 
             jobClient.NewCompleteJobCommand(jobKey)
                     .Variables("{\"foo\":2}")
@@ -96,3 +129,4 @@ namespace CamundaTraining.Workers
         
     }
 }
+ 
