@@ -11,8 +11,8 @@ using CamundaTraining.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Configuration.Json;
 using System.Text.Json;
+using CamundaTraining.Exceptions;
 
- 
 namespace CamundaTraining.Workers
 {
     internal class Program
@@ -156,15 +156,23 @@ namespace CamundaTraining.Workers
             string cvc = variables.cvc;
             string expiryDate = variables.expiryDate;
             double amount = variables.openAmount;
+            try{
+                new CreditCardService().ChargeAmount(cardNumber, cvc, expiryDate, amount);
 
-            new CreditCardService().ChargeAmount(cardNumber, cvc, expiryDate, amount);
-
-            Console.WriteLine("Managing job: " + job); 
-            jobClient.NewCompleteJobCommand(jobKey)
-                    .Send()
-                    .GetAwaiter()
-                    .GetResult();
+                Console.WriteLine("Managing job: " + job); 
+                jobClient.NewCompleteJobCommand(jobKey)
+                        .Send()
+                        .GetAwaiter()
+                        .GetResult();
             }
-        
+            catch(InvalidCreditCardException ie){
+                jobClient.NewFailCommand(jobKey)
+                .Retries(0)
+                .ErrorMessage("Invalid Expiry date")
+                .Send()
+                .GetAwaiter()
+                .GetResult();
+            }
+        }
     }
 }
