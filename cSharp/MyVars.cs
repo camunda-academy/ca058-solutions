@@ -6,4 +6,5 @@ public class MyVar{
     public string cvc { get; set;}
     public string cardNumber { get; set;}
     public string orderId {get; set;}
+    public int discount {get; set;} 
 }

@@ -21,6 +21,7 @@ namespace CamundaTraining.Workers
         private static readonly string JobChargeCreditCard = "credit-card-charging";
         private static readonly string JobPaymentInvocation = "payment-invocation";
         private static readonly string JobPaymentCompleted = "payment-completion";
+        private static readonly string JobApplyDiscount = "discount-application";
         private static readonly string WorkerName = Environment.MachineName;
         private static readonly long WorkCount = 100L;
         private static IZeebeClient client;
@@ -85,6 +86,18 @@ namespace CamundaTraining.Workers
                       .PollInterval(TimeSpan.FromSeconds(1))
                       .Timeout(TimeSpan.FromSeconds(10))
                       .Open();
+
+                client.NewWorker()
+                      .JobType(JobApplyDiscount)
+                      .Handler(HandleJobApplyDiscount)
+                      .MaxJobsActive(5)
+                      .Name(WorkerName)
+                      .AutoCompletion()
+                      .PollInterval(TimeSpan.FromSeconds(1))
+                      .Timeout(TimeSpan.FromSeconds(10))
+                      .Open();
+
+                      
 
                 // blocks main thread, so that worker can run
                 signal.WaitOne();
@@ -181,6 +194,30 @@ namespace CamundaTraining.Workers
                 .GetAwaiter()
                 .GetResult();
             }
+        }
+        private static void HandleJobApplyDiscount(IJobClient jobClient, IJob job)
+        {
+            // business logic
+            var jobKey = job.Key;
+            // Deserialize the JSON-formatted string into a C# object
+            var variablesObj = JsonSerializer.Deserialize<MyVar>(job.Variables);
+
+            var discount = variablesObj.discount;
+            var orderTotal = variablesObj.orderTotal;
+
+            // calculate the discount
+            var discountedAmount = orderTotal - (orderTotal * discount / 100);
+
+            Dictionary<string, object> variablesOut = new Dictionary<string, object>();
+            variablesOut["discountedAmount"] = discountedAmount;
+
+            Console.WriteLine("Handling job: " + job);
+
+            jobClient.NewCompleteJobCommand(jobKey)
+                    .Variables(JsonSerializer.Serialize(variablesOut))
+                    .Send()
+                    .GetAwaiter()
+                    .GetResult();          
         }
     }
 }
