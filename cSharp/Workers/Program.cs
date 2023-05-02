@@ -166,9 +166,17 @@ namespace CamundaTraining.Workers
                         .GetResult();
             }
             catch(InvalidCreditCardException ie){
+                jobClient.NewThrowErrorCommand(jobKey)
+                .ErrorCode("creditCardChargeError")
+                .ErrorMessage("Invalid Expiry date")
+                .Send()
+                .GetAwaiter()
+                .GetResult();
+            }
+            catch(Exception e){
                 jobClient.NewFailCommand(jobKey)
                 .Retries(0)
-                .ErrorMessage("Invalid Expiry date")
+                .ErrorMessage("Generic credit card service error")
                 .Send()
                 .GetAwaiter()
                 .GetResult();
