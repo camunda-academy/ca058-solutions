@@ -97,7 +97,9 @@ namespace CamundaTraining.Workers
             var variablesObj = JsonSerializer.Deserialize<MyVar>(job.Variables);
             await client.NewPublishMessageCommand()
                     .MessageName("paymentRequestMessage")
-                    .CorrelationKey("useless") //start process doesn't require 
+                    .CorrelationKey(variablesObj.orderId) //although not strictly required 
+                                                          //it prevents to start a process if another instance 
+                                                          //is running with a business key = correlationKey
                     .Variables(job.Variables)
                     .Send();
         }  
@@ -109,7 +111,6 @@ namespace CamundaTraining.Workers
             await client.NewPublishMessageCommand()
                     .MessageName("paymentCompletedMessage")
                     .CorrelationKey(variablesObj.orderId)
-                    .Variables(job.Variables)
                     .Send();
         }   
 
@@ -143,8 +144,7 @@ namespace CamundaTraining.Workers
                     .Variables(JsonSerializer.Serialize(variablesOut))
                     .Send()
                     .GetAwaiter()
-                    .GetResult();
-            
+                    .GetResult();          
         }
         private static void HandleJobChargeCreditCard(IJobClient jobClient, IJob job)
         {
@@ -161,7 +161,6 @@ namespace CamundaTraining.Workers
 
             Console.WriteLine("Managing job: " + job); 
             jobClient.NewCompleteJobCommand(jobKey)
-                    .Variables("{\"foo\":2}")
                     .Send()
                     .GetAwaiter()
                     .GetResult();
